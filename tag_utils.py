@@ -19,9 +19,10 @@ def get_clean_selection(get_children: bool = True) -> list:
                         selection.append(child)
     return selection
 
+
 def get_obj_material(obj: str) -> str:
-    shadergroups = cmds.listConnections(cmds.listHistory(obj))
-    material = [mat for mat in cmds.listConnections(shadergroups, materials = True)]
+    shader_groups = cmds.listConnections(cmds.listHistory(obj))
+    material = [mat for mat in cmds.listConnections(shader_groups, materials = True)][0]
     return material
 
 # Tags related functions
