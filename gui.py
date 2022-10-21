@@ -24,6 +24,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.setWindowIcon(QtGui.QIcon(path_utils.get_abspath("icons/guerilla_render.png")))
         self.setWindowTitle("Guerilla Tags editor")
         self.setAcceptDrops(True)
+        self.materials_taglist = []
 
     def import_icons(self):
         self.shared_tag_icon = QtGui.QIcon(path_utils.get_abspath("icons/star.png"))
@@ -32,32 +33,45 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.label_title = QtWidgets.QLabel("Tags on selection")
 
         self.tag_list = QtWidgets.QListWidget()
+        self.tag_list.setToolTip("Tags present on the selection")
         self.tag_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         self.tag_input = QtWidgets.QLineEdit()
+        self.tag_input.setToolTip("Guerilla Tags input line edit")
         self.tag_input.setPlaceholderText("Type your GuerillaTags here")
 
         self.add_tag_buton = QtWidgets.QPushButton('Add tag(s)')
+        self.add_tag_buton.setToolTip("Add tags in the line edit to the selected objects")
         self.add_tag_buton.clicked.connect(self.add_gtags)
 
         self.delete_tag_buton = QtWidgets.QPushButton('Delete tag(s)')
+        self.delete_tag_buton.setToolTip("Delete selected tags on the list from the object in the selections")
         self.delete_tag_buton.clicked.connect(self.delete_tags)
 
         self.replace_tag_buton = QtWidgets.QPushButton('Replace tag(s)')
+        self.replace_tag_buton.setToolTip("Replace selected tags in the list with the tags in the line edit")
         self.replace_tag_buton.clicked.connect(self.replace_tags)
 
         self.merge_selection = QtWidgets.QPushButton('Merge selected tags')
+        self.merge_selection.setToolTip("Distribute selected tags to other objects in the selection")
         self.merge_selection.clicked.connect(self.merge_selected_tags)
 
         self.merge_all_tags = QtWidgets.QPushButton('Merge all')
+        self.merge_all_tags.setToolTip("Redistribute all tags on the list to the selection")
         self.merge_all_tags.clicked.connect(self.merge_all)
 
         self.highlight_shared_tags = QtWidgets.QCheckBox('Highlight shared Tags')
+        self.highlight_shared_tags.setToolTip('Highlight tags shared by all objects in the selection')
         self.highlight_shared_tags.setChecked(True)
         self.highlight_shared_tags.clicked.connect(self.refresh_tag_list_widget)
 
         self.get_children_check = QtWidgets.QCheckBox('Affect selection direct children')
+        self.get_children_check.setToolTip("The tools will modify and gather tags from selection's children")
         self.get_children_check.setChecked(True)
+
+        self.tag_materials = QtWidgets.QPushButton('Tag materials')
+        self.tag_materials.setToolTip('Set the material name to the object')
+
 
     def create_layout(self):
         self.main_layout = QtWidgets.QVBoxLayout(self)
@@ -75,6 +89,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.button_layout_two.addWidget(self.merge_all_tags)
         self.main_layout.addWidget(self.highlight_shared_tags, 5)
         self.main_layout.addWidget(self.get_children_check, 6)
+        self.button_layout_two.addWidget(self.tag_materials)
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasText():
