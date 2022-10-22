@@ -5,6 +5,10 @@ from gtag_editor import tag_utils
 
 import maya.cmds as cmds
 import maya.OpenMayaUI as omui
+import importlib
+
+for modules in [tag_utils,path_utils] :
+    importlib.reload(modules)
 
 # UI related stuff
 def maya_main_window():
@@ -35,6 +39,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.tag_list = QtWidgets.QListWidget()
         self.tag_list.setToolTip("Tags present on the selection")
         self.tag_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.tag_list.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         self.tag_input = QtWidgets.QLineEdit()
         self.tag_input.setToolTip("Guerilla Tags input line edit")
@@ -70,19 +75,54 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.get_children_check.setChecked(True)
 
         self.tag_materials = QtWidgets.QPushButton('Tag materials')
+        self.tag_materials.clicked.connect(self.add_tag_materials)
         self.tag_materials.setToolTip('Set the material name to the object')
 
 
     def create_layout(self):
         self.main_layout = QtWidgets.QVBoxLayout(self)
-        self.main_layout.addWidget(self.label_title, 0)
-        self.main_layout.addWidget(self.tag_list, 1)
-        self.main_layout.addWidget(self.tag_input,2)
+        self.tags_layout = QtWidgets.QHBoxLayout()
+        self.tag_list_layout = QtWidgets.QVBoxLayout()
+        self.tags_layout.addLayout(self.tag_list_layout,0)
+        self.main_layout.addLayout(self.tags_layout,0)
+        self.tag_list_layout.addWidget(self.label_title, 0)
+        self.tag_list_layout.addWidget(self.tag_list, 1)
+        self.main_layout.addWidget(self.tag_input,1)
+
+        self.tags_buttons_layout = QtWidgets.QVBoxLayout()
+        self.tags_layout.addLayout(self.tags_buttons_layout,1)
+
+        self.s0_buton = QtWidgets.QPushButton('Tag s0')
+        self.tags_buttons_layout.addWidget(self.s0_buton, 1)
+        self.s01_buton = QtWidgets.QPushButton('Tag s01')
+        self.s01_buton.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        self.tags_buttons_layout.addWidget(self.s01_buton,2)
+        self.s02_buton = QtWidgets.QPushButton('Tag s02')
+        self.s02_buton.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+
+        self.tags_buttons_layout.addWidget(self.s02_buton,3)
+        self.s03_buton = QtWidgets.QPushButton('Tag s03')
+        self.s03_buton.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+
+        self.tags_buttons_layout.addWidget(self.s03_buton,4)
+        self.s04_buton = QtWidgets.QPushButton('Tag s04')
+        self.s04_buton.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+
+        self.tags_buttons_layout.addWidget(self.s04_buton,5)
+        self.tags_buttons_layout.addItem(QtWidgets.QSpacerItem(0,
+                                                                 60,
+                                                                 QtWidgets.QSizePolicy.Fixed,
+                                                                 QtWidgets.QSizePolicy.Expanding))
+        for buttons in self.tags_buttons_layout.children():
+            buttons.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+
+
         self.button_layout_one = QtWidgets.QHBoxLayout()
         self.main_layout.addLayout(self.button_layout_one,3)
         self.button_layout_one.addWidget(self.delete_tag_buton)
         self.button_layout_one.addWidget(self.replace_tag_buton)
         self.button_layout_one.addWidget(self.add_tag_buton)
+
         self.button_layout_two = QtWidgets.QHBoxLayout()
         self.main_layout.addLayout(self.button_layout_two, 4)
         self.button_layout_two.addWidget(self.merge_selection)
@@ -231,6 +271,13 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                     pass
             tags_replace = tag_utils.convert_gtags_in_string(old_tags)
             tag_utils.set_gtags_attribute(obj, tags_replace)
+        self.refresh_tag_list_widget()
+
+    def add_tag_materials(self):
+        for obj in tag_utils.get_clean_selection(self.get_children_check.isChecked()) :
+            matnode = tag_utils.get_obj_material(obj)
+            tag_utils.add_gtag_to_attr(obj, matnode)
+
         self.refresh_tag_list_widget()
 
     def add_gtags(self):
