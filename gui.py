@@ -30,6 +30,11 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.setAcceptDrops(True)
         self.materials_taglist = []
 
+    def init_materials_taglist(self):
+        for shading_engine in cmds.ls(type = 'shadingEngine'):
+            if cmds.set(shading_engine, query=True):
+                for materials in cmds.ls(cmds.listConnections(shading_engine), materials=True):
+
     def import_icons(self):
         self.shared_tag_icon = QtGui.QIcon(path_utils.get_abspath("icons/star.png"))
 
@@ -77,7 +82,6 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.tag_materials = QtWidgets.QPushButton('Tag materials')
         self.tag_materials.clicked.connect(self.add_tag_materials)
         self.tag_materials.setToolTip('Set the material name to the object')
-
 
     def create_layout(self):
         self.main_layout = QtWidgets.QVBoxLayout(self)
@@ -274,7 +278,15 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.refresh_tag_list_widget()
 
     def add_tag_materials(self):
+
         for obj in tag_utils.get_clean_selection(self.get_children_check.isChecked()) :
+            matname = tag_utils.get_obj_material(obj)
+            for tags in tag_utils.convert_gtags_in_list(tag_utils.get_gtags_attribute(obj)):
+                if tags == matname:
+                    return
+                if tags in self.materials_taglist:
+                    pass
+
             matnode = tag_utils.get_obj_material(obj)
             tag_utils.add_gtag_to_attr(obj, matnode)
 
