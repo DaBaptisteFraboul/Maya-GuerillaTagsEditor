@@ -116,9 +116,3 @@ def add_gtag_to_attr(obj: str, tags: str) -> None:
     else:
         new_tags = old_tags + ', ' + tags
     set_gtags_attribute(obj, new_tags)
-
-
-
-
-
-

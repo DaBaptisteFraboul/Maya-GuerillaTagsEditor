@@ -29,15 +29,11 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.setWindowTitle("Guerilla Tags editor")
         self.setAcceptDrops(True)
         self.materials_taglist = []
-        self.init_materials_taglist()
-        print(f'Materials taglist : {self.materials_taglist}')
 
     def init_materials_taglist(self):
         for shading_engine in cmds.ls(type = 'shadingEngine'):
-            if cmds.sets(shading_engine, query=True):
+            if cmds.set(shading_engine, query=True):
                 for materials in cmds.ls(cmds.listConnections(shading_engine), materials=True):
-                    if materials not in self.materials_taglist:
-                        self.materials_taglist.append(materials)
 
     def import_icons(self):
         self.shared_tag_icon = QtGui.QIcon(path_utils.get_abspath("icons/star.png"))
