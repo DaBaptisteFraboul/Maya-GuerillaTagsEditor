@@ -29,11 +29,15 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.setWindowTitle("Guerilla Tags editor")
         self.setAcceptDrops(True)
         self.materials_taglist = []
+        self.init_materials_taglist()
+        self.affect_mode = 'selection'
+        print(f'Materials list : {self.materials_taglist}')
 
     def init_materials_taglist(self):
         for shading_engine in cmds.ls(type = 'shadingEngine'):
-            if cmds.set(shading_engine, query=True):
+            if cmds.sets(shading_engine, query=True):
                 for materials in cmds.ls(cmds.listConnections(shading_engine), materials=True):
+                    self.materials_taglist.append(materials)
 
     def import_icons(self):
         self.shared_tag_icon = QtGui.QIcon(path_utils.get_abspath("icons/star.png"))
@@ -95,8 +99,10 @@ class guerillaTagsEditor(QtWidgets.QDialog):
 
         self.tags_buttons_layout = QtWidgets.QVBoxLayout()
         self.tags_layout.addLayout(self.tags_buttons_layout,1)
-
+        self.subdivsion_tag_label = QtWidgets.QLabel('Subdivision Tags')
+        self.tags_buttons_layout.addWidget(self.subdivsion_tag_label, 0)
         self.s0_buton = QtWidgets.QPushButton('Tag s0')
+        self.s0_buton.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.tags_buttons_layout.addWidget(self.s0_buton, 1)
         self.s01_buton = QtWidgets.QPushButton('Tag s01')
         self.s01_buton.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
