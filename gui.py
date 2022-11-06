@@ -23,14 +23,21 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.import_icons()
         self.create_widgets()
         self.create_layout()
+        self.affect_mode = 'selection'
         self.generate_selection_scriptjob()
         self.refresh_tag_list_widget()
         self.setWindowIcon(QtGui.QIcon(path_utils.get_abspath("icons/guerilla_render.png")))
         self.setWindowTitle("Guerilla Tags editor")
         self.setAcceptDrops(True)
         self.materials_taglist = []
+        self.obj_list = None
+        self.subdiv_taglist = ['s0',
+                               's01',
+                               's02',
+                               's03',
+                               's04']
         self.init_materials_taglist()
-        self.affect_mode = 'selection'
+
         print(f'Materials list : {self.materials_taglist}')
 
     def init_materials_taglist(self):
@@ -38,6 +45,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
             if cmds.sets(shading_engine, query=True):
                 for materials in cmds.ls(cmds.listConnections(shading_engine), materials=True):
                     self.materials_taglist.append(materials)
+
 
     def import_icons(self):
         self.shared_tag_icon = QtGui.QIcon(path_utils.get_abspath("icons/star.png"))
@@ -79,13 +87,31 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.highlight_shared_tags.setChecked(True)
         self.highlight_shared_tags.clicked.connect(self.refresh_tag_list_widget)
 
-        self.get_children_check = QtWidgets.QCheckBox('Affect selection direct children')
+        self.selection_label = QtWidgets.QLabel('Tag mode')
+
+        self.get_children_check = QtWidgets.QCheckBox('Selection children')
+        self.get_children_check.clicked.connect(self.set_mode_on_children)
         self.get_children_check.setToolTip("The tools will modify and gather tags from selection's children")
-        self.get_children_check.setChecked(True)
+        self.get_children_check.setChecked(False)
+
+        self.get_selection_check = QtWidgets.QCheckBox('Selection')
+        self.get_selection_check.clicked.connect(self.set_mode_on_selection)
+        self.get_selection_check.setChecked(True)
+
+        self.get_all_check = QtWidgets.QCheckBox('Scene')
+        self.get_all_check.clicked.connect(self.set_mode_on_all)
+        self.get_all_check.setChecked(False)
 
         self.tag_materials = QtWidgets.QPushButton('Tag materials')
         self.tag_materials.clicked.connect(self.add_tag_materials)
         self.tag_materials.setToolTip('Set the material name to the object')
+
+        self.option_label = QtWidgets.QLabel('Options')
+
+    def get_taglist_objects(self):
+        if self.affect_mode == 'selection' :
+            self.obj_list = cmds.ls(selection = True, recursive = False)
+
 
     def create_layout(self):
         self.main_layout = QtWidgets.QVBoxLayout(self)
@@ -137,8 +163,16 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.main_layout.addLayout(self.button_layout_two, 4)
         self.button_layout_two.addWidget(self.merge_selection)
         self.button_layout_two.addWidget(self.merge_all_tags)
-        self.main_layout.addWidget(self.highlight_shared_tags, 5)
-        self.main_layout.addWidget(self.get_children_check, 6)
+
+        self.tag_mode_layout = QtWidgets.QHBoxLayout()
+        self.tag_mode_layout.addWidget(self.get_selection_check, 0)
+        self.tag_mode_layout.addWidget(self.get_children_check, 1)
+        self.tag_mode_layout.addWidget(self.get_all_check,2)
+
+        self.main_layout.addWidget(self.selection_label, 5)
+        self.main_layout.addLayout(self.tag_mode_layout, 6)
+        self.main_layout.addWidget(self.option_label,7)
+        self.main_layout.addWidget(self.highlight_shared_tags, 8)
         self.button_layout_two.addWidget(self.tag_materials)
 
     def dragEnterEvent(self, event):
@@ -228,12 +262,38 @@ class guerillaTagsEditor(QtWidgets.QDialog):
             list_widget_items.append(self.tag_list.item(i).text())
         return list_widget_items
 
+
+    def set_mode_on_selection(self):
+        self.get_selection_check.setChecked(True)
+        self.get_all_check.setChecked(False)
+        self.get_children_check.setChecked(False)
+        self.affect_mode = 'selection'
+        self.label_title.setText('Tags on selection')
+        self.refresh_tag_list_widget()
+
+    def set_mode_on_children(self):
+        self.get_children_check.setChecked(True)
+        self.get_all_check.setChecked(False)
+        self.get_selection_check.setChecked(False)
+        self.affect_mode = 'children'
+        self.label_title.setText('Tags on selection and children')
+        self.refresh_tag_list_widget()
+
+    def set_mode_on_all(self):
+        self.get_all_check.setChecked(True)
+        self.get_selection_check.setChecked(False)
+        self.get_children_check.setChecked(False)
+        self.affect_mode = 'all'
+        self.label_title.setText('Tags on scene objects')
+        self.refresh_tag_list_widget()
+
     def clear_list(self):
         self.tag_list.clear()
 
     def refresh_tag_list_widget(self):
         tags_to_push = []
-        for obj in tag_utils.get_clean_selection(self.get_children_check.isChecked()):
+        selection = tag_utils.get_clean_selection(self.affect_mode)
+        for obj in selection:
             if tag_utils.has_gtags_attribute(obj) and not tag_utils.is_gtags_empty(obj):
                 attr = tag_utils.convert_gtags_in_list(tag_utils.get_gtags_attribute(obj))
                 for tags in attr:
@@ -244,12 +304,12 @@ class guerillaTagsEditor(QtWidgets.QDialog):
             item = QtWidgets.QListWidgetItem(new_tags)
             item.setSizeHint(QtCore.QSize(20, 30))
             self.tag_list.addItem(item)
-        if self.highlight_shared_tags.isChecked() and len(tag_utils.get_clean_selection(self.get_children_check.isChecked())) > 1 :
+        if self.highlight_shared_tags.isChecked() and len(selection) > 1 :
             self.check_shared_tags()
 
     def replace_tags(self):
         selected_tags =[]
-        selection = tag_utils.get_clean_selection(self.get_children_check.isChecked())
+        selection = tag_utils.get_clean_selection(self.affect_mode)
         line_edit_tags = tag_utils.convert_gtags_in_list(self.tag_input.text())
         for items in self.tag_list.selectedItems() :
             selected_tags.append(items.text())
@@ -269,8 +329,8 @@ class guerillaTagsEditor(QtWidgets.QDialog):
 
     def delete_tags(self):
         selected_tags = []
-        selection = cmds.ls(selection = True)
-        for items in self.tag_list.selectedItems() :
+        selection = tag_utils.get_clean_selection(self.affect_mode)
+        for items in self.tag_list.selectedItems():
             selected_tags.append(items.text())
         for obj in selection:
             old_tags = tag_utils.convert_gtags_in_list(tag_utils.get_gtags_attribute(obj))
@@ -285,7 +345,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
 
     def add_tag_materials(self):
 
-        for obj in tag_utils.get_clean_selection(self.get_children_check.isChecked()) :
+        for obj in tag_utils.get_clean_selection(self.affect_mode) :
             matname = tag_utils.get_obj_material(obj)
             for tags in tag_utils.convert_gtags_in_list(tag_utils.get_gtags_attribute(obj)):
                 if tags == matname:
@@ -306,7 +366,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         # Check line edit string
         if self.tag_input.text() and not self.tag_input.text().isspace():
             # Get selection
-            selection = tag_utils.get_clean_selection(self.get_children_check.isChecked())
+            selection = tag_utils.get_clean_selection(self.affect_mode)
             line_edit_tags = self.tag_input.text()
             new_tags = tag_utils.convert_gtags_in_list(line_edit_tags)
             for obj in selection :
@@ -324,11 +384,15 @@ class guerillaTagsEditor(QtWidgets.QDialog):
 
         self.refresh_tag_list_widget()
 
+    def tag_subdiv(self, subidv):
+        tag_utils.add_gtag_to_attr()
+
     def merge_selected_tags(self):
         selected_tags = []
+        selection = tag_utils.get_clean_selection(self.affect_mode)
         for items in self.tag_list.selectedItems() :
             selected_tags.append(items.text())
-        for obj in tag_utils.get_clean_selection(self.get_children_check.isChecked()):
+        for obj in selection :
             if not tag_utils.has_gtags_attribute(obj):
                 tag_utils.create_gtags_attribute()
             if tag_utils.is_gtags_empty(obj):
@@ -347,7 +411,8 @@ class guerillaTagsEditor(QtWidgets.QDialog):
     def merge_all(self):
         selected_tags = self.get_items_on_list()
         print(selected_tags)
-        for obj in tag_utils.get_clean_selection(self.get_children_check.isChecked()):
+        selection = tag_utils.get_clean_selection(self.affect_mode)
+        for obj in selection:
             if not tag_utils.has_gtags_attribute(obj):
                 print("pre")
                 tag_utils.create_gtags_attribute()

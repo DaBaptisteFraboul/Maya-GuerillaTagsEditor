@@ -3,20 +3,25 @@ import maya.cmds as cmds
 # Module related to GuerillaTags attribute and selection
 
 
-def get_clean_selection(get_children: bool = True) -> list:
+def get_clean_selection(mode) -> list:
     """
     Get a selection with only transforms and direct children transform if checked
     :param get_children:
     :return:
     """
-    selection = cmds.ls(selection=True, tr=True)
-    if get_children and selection is not None:
-        for obj in selection:
-            children = cmds.listRelatives(obj)
-            if children:
-                for child in children:
-                    if child not in selection and cmds.nodeType(child) == 'transform':
-                        selection.append(child)
+    selection = []
+    if mode == 'selection':
+        selection = cmds.ls(selection=True, tr=True, objectsOnly = True, cameras=False)
+    if mode == 'children':
+        selection = cmds.ls(selection=True, tr=True, objectsOnly =True, cameras=False)
+        for obj in selection :
+            for children in cmds.listRelatives(obj, allDescendents = True):
+                if cmds.nodeType(children) == 'transform' and children not in selection:
+                    selection.append(children)
+    if mode == 'all':
+        selection = cmds.ls(tr = True,  cameras = False)
+    for element in selection:
+        print(element)
     return selection
 
 
