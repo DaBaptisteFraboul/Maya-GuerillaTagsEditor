@@ -164,17 +164,27 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.button_layout_two.addWidget(self.merge_selection)
         self.button_layout_two.addWidget(self.merge_all_tags)
 
+        self.option_layout = QtWidgets.QVBoxLayout()
+
         self.tag_mode_layout = QtWidgets.QHBoxLayout()
         self.tag_mode_layout.addWidget(self.get_selection_check, 0)
         self.tag_mode_layout.addWidget(self.get_children_check, 1)
         self.tag_mode_layout.addWidget(self.get_all_check,2)
+        #self.option_layout.addWidget(self.selection_label,0)
 
-        self.main_layout.addWidget(self.selection_label, 5)
-        self.main_layout.addLayout(self.tag_mode_layout, 6)
-        self.main_layout.addWidget(self.option_label,7)
-        self.main_layout.addWidget(self.highlight_shared_tags, 8)
+        self.option_layout.addLayout(self.tag_mode_layout,1)
+        self.option_layout.addWidget(self.option_label, 2)
+
+        for widget in self.tag_mode_layout.children():
+            widget.setAlignment(QtCore.Qt.AlignBottom)
+
+        self.option_layout.addWidget(self.highlight_shared_tags, 3)
         self.button_layout_two.addWidget(self.tag_materials)
-
+        self.tag_mode_layout.setAlignment(QtCore.Qt.AlignBaseline)
+        self.main_layout.setAlignment(QtCore.Qt.AlignBottom)
+        self.option_label.setAlignment(QtCore.Qt.AlignBottom)
+        self.selection_label.setAlignment(QtCore.Qt.AlignBottom)
+        self.main_layout.addLayout(self.option_layout, 5)
     def dragEnterEvent(self, event):
         if event.mimeData().hasText():
             event.accept()
