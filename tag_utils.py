@@ -16,12 +16,15 @@ def get_clean_selection(mode) -> list:
         selection = cmds.ls(selection=True, tr=True, objectsOnly =True, cameras=False)
         for obj in selection :
             for children in cmds.listRelatives(obj, allDescendents = True):
+
                 if cmds.nodeType(children) == 'transform' and children not in selection:
                     selection.append(children)
     if mode == 'all':
         selection = cmds.ls(tr = True,  cameras = False)
     for element in selection:
         print(element)
+        print(f"objectType : {cmds.objectType(element)}")
+        print(f"nodeType : {cmds.nodeType(element)}")
     return selection
 
 

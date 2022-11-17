@@ -15,7 +15,6 @@ def maya_main_window():
     main_window_ptr = omui.MQtUtil.mainWindow()
     return wrapInstance(int(main_window_ptr), QtWidgets.QWidget)
 
-
 class guerillaTagsEditor(QtWidgets.QDialog):
 
     def __init__(self, parent=maya_main_window()):
@@ -39,16 +38,6 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.init_materials_taglist()
 
         print(f'Materials list : {self.materials_taglist}')
-
-    def init_materials_taglist(self):
-        for shading_engine in cmds.ls(type = 'shadingEngine'):
-            if cmds.sets(shading_engine, query=True):
-                for materials in cmds.ls(cmds.listConnections(shading_engine), materials=True):
-                    self.materials_taglist.append(materials)
-
-
-    def import_icons(self):
-        self.shared_tag_icon = QtGui.QIcon(path_utils.get_abspath("icons/star.png"))
 
     def create_widgets(self):
         self.label_title = QtWidgets.QLabel("Tags on selection")
@@ -109,10 +98,19 @@ class guerillaTagsEditor(QtWidgets.QDialog):
 
         self.option_label = QtWidgets.QLabel('Options')
 
+
+    def init_materials_taglist(self):
+        for shading_engine in cmds.ls(type = 'shadingEngine'):
+            if cmds.sets(shading_engine, query=True):
+                for materials in cmds.ls(cmds.listConnections(shading_engine), materials=True):
+                    self.materials_taglist.append(materials)
+
+    def import_icons(self):
+        self.shared_tag_icon = QtGui.QIcon(path_utils.get_abspath("icons/star.png"))
+
     def get_taglist_objects(self):
         if self.affect_mode == 'selection' :
             self.obj_list = cmds.ls(selection = True, recursive = False)
-
 
     def create_layout(self):
         self.main_layout = QtWidgets.QVBoxLayout(self)
@@ -130,8 +128,10 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.tags_buttons_layout.addWidget(self.subdivsion_tag_label, 0)
         self.s0_buton = QtWidgets.QPushButton('Tag s0')
         self.s0_buton.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        self.s0_buton.clicked.connect(lambda state : self.tag_subdiv(0))
         self.tags_buttons_layout.addWidget(self.s0_buton, 1)
         self.s01_buton = QtWidgets.QPushButton('Tag s01')
+        self.s01_buton.clicked.connect(tag_utils.get_camera_in_scene)
         self.s01_buton.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.tags_buttons_layout.addWidget(self.s01_buton,2)
         self.s02_buton = QtWidgets.QPushButton('Tag s02')
@@ -181,7 +181,6 @@ class guerillaTagsEditor(QtWidgets.QDialog):
 
         for widget in self.tag_mode_layout.children():
             widget.setAlignment(QtCore.Qt.AlignBottom)
-
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasText():
@@ -269,7 +268,6 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         for i in range(self.tag_list.count()):
             list_widget_items.append(self.tag_list.item(i).text())
         return list_widget_items
-
 
     def set_mode_on_selection(self):
         self.get_selection_check.setChecked(True)
@@ -393,7 +391,12 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.refresh_tag_list_widget()
 
     def tag_subdiv(self, subidv):
-        tag_utils.add_gtag_to_attr()
+        selection = tag_utils.get_clean_selection(self.affect_mode)
+        for obj in selection:
+            if tag_utils.has_gtags_attribute(obj) :
+                for tags in tag_utils.convert_gtags_in_list(tag_utils.get_gtags_attribute(obj)) :
+                    print(tags)
+
 
     def merge_selected_tags(self):
         selected_tags = []
