@@ -1,9 +1,9 @@
 # Maya-GuerillaTagsEditor
 
 ## Introduction 
-    This is a script I created for Autodesk Maya, its purpose is to generate GuerillaTags for GuerillaRender workflow
-    my purpose is to make it the most comfortable possible. Feedbacks for improvements are welcomes.
-    I will upgrade it on  my spare time.
+This is a script I created for Autodesk Maya, its purpose is to generate GuerillaTags for GuerillaRender workflow
+my purpose is to make it the most comfortable possible. Feedbacks for improvements are welcomes.
+I will upgrade it on  my spare time.
 
 
 ## How to install ?
