@@ -15,11 +15,15 @@ def maya_main_window():
     main_window_ptr = omui.MQtUtil.mainWindow()
     return wrapInstance(int(main_window_ptr), QtWidgets.QWidget)
 
-
 class guerillaTagsEditor(QtWidgets.QDialog):
 
     def __init__(self, parent=maya_main_window()):
+        icons_dir = path_utils.get_abspath('icons')
+        QtCore.QDir.addSearchPath('images', icons_dir)
+        with open(path_utils.get_abspath('icons/stylesheet.css'), 'r') as f:
+            stylesheet = f.read()
         super(guerillaTagsEditor, self).__init__(parent)
+        self.setStyleSheet(stylesheet)
         self.import_icons()
         self.create_widgets()
         self.create_layout()
