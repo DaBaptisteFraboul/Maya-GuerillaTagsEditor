@@ -3,7 +3,20 @@ import maya.cmds as cmds
 # Module related to GuerillaTags attribute and selection
 
 
-def get_clean_selection(mode) -> list:
+def get_cameras_transform_in_scene():
+    """
+    Get camera transforms in scene to blacklist them
+    :return:
+    """
+    selection =cmds.ls(selection=False,  cameras=True)
+    transforms = []
+    for camera_shape in selection:
+        cam_transform = cmds.listRelatives(camera_shape, parent=True)
+        transforms.append(cam_transform[0])
+    return transforms
+
+
+def get_clean_selection(mode, object_blacklist) -> list:
     """
     Get a selection with only transforms and direct children transform if checked
     :param get_children:
@@ -16,12 +29,17 @@ def get_clean_selection(mode) -> list:
         selection = cmds.ls(selection=True, tr=True, objectsOnly =True, cameras=False)
         for obj in selection :
             for children in cmds.listRelatives(obj, allDescendents = True):
+
                 if cmds.nodeType(children) == 'transform' and children not in selection:
                     selection.append(children)
     if mode == 'all':
         selection = cmds.ls(tr = True,  cameras = False)
-    for element in selection:
-        print(element)
+    print(object_blacklist, "objectblacklist")
+    for blacklisted in object_blacklist:
+        if blacklisted in selection:
+            print("blacklisted", blacklisted)
+            selection.remove(blacklisted)
+    print("Selection", selection)
     return selection
 
 
@@ -34,12 +52,12 @@ def get_obj_material(obj: str) -> str:
 # Tags related functions
 
 
-def create_gtags_attribute() -> None:
+def create_gtags_attribute(obj) -> None:
     """
-    Create 'GuerillaTags' attribute on selection
+    Create 'GuerillaTags' attribute on obj
     :return:
     """
-    cmds.addAttr(longName='GuerillaTags', dataType="string")
+    cmds.addAttr(obj, longName='GuerillaTags', dataType="string")
 
 
 def has_gtags_attribute(obj: str) -> bool:
