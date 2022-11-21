@@ -21,7 +21,12 @@ def maya_main_window():
 
 class guerillaTagsEditor(QtWidgets.QDialog):
     def __init__(self, parent=maya_main_window()):
+        icons_dir = path_utils.get_abspath('icons')
         super(guerillaTagsEditor, self).__init__(parent)
+        QtCore.QDir.addSearchPath('images', icons_dir)
+        with open(path_utils.get_abspath('icons/stylesheet.css'), 'r') as f:
+            stylesheet = f.read()
+        self.setStyleSheet(stylesheet)
         self.object_blacklist = []
         self.import_icons()
         self.create_widgets()
