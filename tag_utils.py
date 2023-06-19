@@ -8,7 +8,7 @@ def get_cameras_transform_in_scene():
     Get camera transforms in scene to blacklist them
     :return:
     """
-    selection =cmds.ls(selection=False,  cameras=True)
+    selection = cmds.ls(selection=False, cameras=True)
     transforms = []
     for camera_shape in selection:
         cam_transform = cmds.listRelatives(camera_shape, parent=True)
@@ -23,17 +23,16 @@ def get_clean_selection(mode, object_blacklist) -> list:
     :return:
     """
     selection = []
-    if mode == 'selection':
-        selection = cmds.ls(selection=True, tr=True, objectsOnly = True, cameras=False)
-    if mode == 'children':
-        selection = cmds.ls(selection=True, tr=True, objectsOnly =True, cameras=False)
-        for obj in selection :
-            for children in cmds.listRelatives(obj, allDescendents = True):
-
-                if cmds.nodeType(children) == 'transform' and children not in selection:
+    if mode == "selection":
+        selection = cmds.ls(selection=True, tr=True, objectsOnly=True, cameras=False)
+    if mode == "children":
+        selection = cmds.ls(selection=True, tr=True, objectsOnly=True, cameras=False)
+        for obj in selection:
+            for children in cmds.listRelatives(obj, allDescendents=True):
+                if cmds.nodeType(children) == "transform" and children not in selection:
                     selection.append(children)
-    if mode == 'all':
-        selection = cmds.ls(tr = True,  cameras = False)
+    if mode == "all":
+        selection = cmds.ls(tr=True, cameras=False)
     print(object_blacklist, "objectblacklist")
     for blacklisted in object_blacklist:
         if blacklisted in selection:
@@ -45,9 +44,12 @@ def get_clean_selection(mode, object_blacklist) -> list:
 
 def get_obj_material(obj: str) -> str:
     shader_groups = cmds.listConnections(cmds.listHistory(obj))
-    if shader_groups :
-        material = [mat for mat in cmds.ls(cmds.listConnections(shader_groups), materials = True)][0]
+    if shader_groups:
+        material = [
+            mat for mat in cmds.ls(cmds.listConnections(shader_groups), materials=True)
+        ][0]
         return material
+
 
 # Tags related functions
 
@@ -57,7 +59,7 @@ def create_gtags_attribute(obj) -> None:
     Create 'GuerillaTags' attribute on obj
     :return:
     """
-    cmds.addAttr(obj, longName='GuerillaTags', dataType="string")
+    cmds.addAttr(obj, longName="GuerillaTags", dataType="string")
 
 
 def has_gtags_attribute(obj: str) -> bool:
@@ -75,7 +77,7 @@ def get_gtags_attribute(obj: str) -> str:
     :param obj:
     :return: string
     """
-    return cmds.getAttr(f'{obj}.GuerillaTags')
+    return cmds.getAttr(f"{obj}.GuerillaTags")
 
 
 def set_gtags_attribute(obj: str, gtags: str) -> None:
@@ -85,7 +87,7 @@ def set_gtags_attribute(obj: str, gtags: str) -> None:
     :param gtags:
     :return:
     """
-    cmds.setAttr(f'{obj}.GuerillaTags', gtags, typ='string')
+    cmds.setAttr(f"{obj}.GuerillaTags", gtags, typ="string")
 
 
 def convert_gtags_in_list(guerilla_tags: str) -> list:
@@ -110,7 +112,7 @@ def convert_gtags_in_string(guerilla_tags: list) -> str:
         if tags == guerilla_tags[0]:
             gtags_string += tags
         else:
-            gtags_string += ', ' + tags
+            gtags_string += ", " + tags
     return gtags_string
 
 
@@ -120,7 +122,7 @@ def is_gtags_empty(obj) -> bool:
     :param obj:
     :return:
     """
-    if not cmds.getAttr(f'{obj}.GuerillaTags'):
+    if not cmds.getAttr(f"{obj}.GuerillaTags"):
         return True
     else:
         return False
@@ -137,5 +139,5 @@ def add_gtag_to_attr(obj: str, tags: str) -> None:
     if not old_tags:
         new_tags = tags
     else:
-        new_tags = old_tags + ', ' + tags
+        new_tags = old_tags + ", " + tags
     set_gtags_attribute(obj, new_tags)

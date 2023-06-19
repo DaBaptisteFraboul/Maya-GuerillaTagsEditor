@@ -1,7 +1,8 @@
-from gtag_editor import gui
+import gui
 import importlib
 
 importlib.reload(gui)
 
-win = gui.guerillaTagsEditor()
-win.show()
+def execute():
+    win = gui.guerillaTagsEditor()
+    win.show()
