@@ -7,13 +7,20 @@ I will upgrade it on  my spare time.
 
 
 ## How to install ?
-This is a script with multiples sub-modules : you have to install it inside any of Maya's script path.
-
-(e.g. "D:\Users\<Username>\Documents\maya\<20xx>\scripts")
-- Create a folder `gtag_editor` inside the script folder ;
-- Copy this repo content inside `gtag_editor`;
-- Inside Maya, execute the script main.py from `gtag_editor`(create a shelf shortcut for convenience).
-
+- Step 1 : Clone or download the repository to a desired location (e.g. <DOWNLOAD_LOCATION>) 
+- Step 2 : Inside Maya, Create a new python Script in the Script Editor
+- Step 3 : Use the folowing code to call the Guerilla Tag editor
+```python 
+import sys
+import importlib
+# Add the Maya Guerilla Tag editor folder (<DOWNLOAD_LOCATION>) to the Maya Python Interpreter
+sys.path.append(<DOWNLOAD_LOCATION>)
+# Import main module from GuerillaTagEditor.main
+import main
+#Launch Editor
+main.execute()
+```
+- Last step : You may want to save the script as a shortcut on the shelf.
 ## How to use 
 
     Section to come...
