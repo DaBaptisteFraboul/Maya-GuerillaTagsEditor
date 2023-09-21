@@ -57,6 +57,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.obj_list = None
         self.subdiv_taglist = ["s0", "s01", "s02", "s03", "s04"]
         self.init_materials_taglist()
+        self.refresh_tag_list_widget()
 
     def create_widgets(self):
         """
