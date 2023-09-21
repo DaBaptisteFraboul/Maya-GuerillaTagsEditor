@@ -484,14 +484,16 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                 )
                 if not tag_utils.is_gtags_empty(obj):
                     for tags in obj_tags:
+                        # Loop to delete old material name that is not the connected one
                         if tags == matname:
                             return
-                        if matname in self.materials_taglist or matname in tags:
+                        elif tags in self.materials_taglist:
                             obj_tags.remove(tags)
-                        obj_tags.append(tag_utils.get_obj_material(obj))
-                        tag_utils.set_gtags_attribute(
-                            obj, tag_utils.convert_gtags_in_string(obj_tags)
-                        )
+
+                    obj_tags.append(tag_utils.get_obj_material(obj))
+                    tag_utils.set_gtags_attribute(
+                        obj, tag_utils.convert_gtags_in_string(obj_tags)
+                    )
                 else:
                     tag_utils.set_gtags_attribute(obj, matname)
             else:
