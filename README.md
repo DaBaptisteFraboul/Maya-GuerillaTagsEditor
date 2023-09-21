@@ -23,9 +23,11 @@ main.execute()
 - Last step : You may want to save the script as a shortcut on the shelf.
 ## How to use 
 
-    Section to come...
+![002](https://github.com/DaBaptisteFraboul/Maya-GuerillaTagsEditor/assets/100163862/c3fab047-81a2-402e-82f1-0159e89a49db)
+
+You can drag and drop with middle mouse button to get the Tags directly from the outliner.
+![001](https://github.com/DaBaptisteFraboul/Maya-GuerillaTagsEditor/assets/100163862/2dcc2ac8-45cc-4cb1-841f-7181bc9dcf58)
 
 ## Todo list 
-    - Refactoring all the code to make it clearer ;
-    - Adding the possibility to add all the tags from selection to the last selected ;
+    - No future features planned
 
