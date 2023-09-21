@@ -1,5 +1,5 @@
 # Maya-GuerillaTagsEditor
-
+![GitHub contributors](https://img.shields.io/github/contributors-anon/DaBaptisteFraboul/Maya-GuerillaTagsEditor) ![GitHub](https://img.shields.io/github/license/DaBaptisteFraboul/Maya-GuerillaTagsEditor)
 ## Introduction 
 This is a script I created for Autodesk Maya, its purpose is to generate GuerillaTags for GuerillaRender workflow
 my purpose is to make it the most comfortable possible. Feedbacks for improvements are welcomes.
@@ -24,9 +24,9 @@ main.execute()
 ## How to use 
 
 ![002](https://github.com/DaBaptisteFraboul/Maya-GuerillaTagsEditor/assets/100163862/c3fab047-81a2-402e-82f1-0159e89a49db)
-THe tool window that should Pop-up
+
 ![001](https://github.com/DaBaptisteFraboul/Maya-GuerillaTagsEditor/assets/100163862/2dcc2ac8-45cc-4cb1-841f-7181bc9dcf58)
-You can drag and drop with middle mouse button to get the Tags directly from the outliner.
+*You can drag and drop with middle mouse button to get the Tags directly from the outliner.*
 
 ## Todo list 
     - No future features planned
