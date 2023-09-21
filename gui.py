@@ -136,13 +136,13 @@ class guerillaTagsEditor(QtWidgets.QDialog):
 
         self.option_label = QtWidgets.QLabel("Options")
 
-    def update_then_refresh(method):
+    def then_refresh(method):
         """
         Decorator that is used to update the the instance blacklist, use methode and then refresh the instance
         """
 
-        def instance_wrapper(self):
-            wrapped_method = method(self)
+        def instance_wrapper(self, *args):
+            wrapped_method = method(self, *args)
             self.refresh_tag_list_widget()
             return wrapped_method
 
@@ -426,7 +426,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         if self.highlight_shared_tags.isChecked() and len(selection) > 1:
             self.check_shared_tags()
 
-    @update_then_refresh
+    @then_refresh
     def replace_tags(self):
         """
         Replace tags by taking in account the selected tags in the list
@@ -454,7 +454,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                 obj, tag_utils.convert_gtags_in_string(obj_tags)
             )
 
-    @update_then_refresh
+    @then_refresh
     def delete_tags(self):
         selected_tags = []
         selection = tag_utils.get_clean_selection(self.affect_mode)
@@ -472,7 +472,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
             tags_replace = tag_utils.convert_gtags_in_string(old_tags)
             tag_utils.set_gtags_attribute(obj, tags_replace)
 
-    @update_then_refresh
+    @then_refresh
     def add_tag_materials(self):
         for obj in tag_utils.get_clean_selection(self.affect_mode):
             matname = tag_utils.get_obj_material(obj)
@@ -497,7 +497,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                 tag_utils.create_gtags_attribute(obj)
                 tag_utils.set_gtags_attribute(obj, matname)
 
-    @update_then_refresh
+    @then_refresh
     def add_gtags(self):
         """
         Get the Guerilla Tags from line edit and add them to selection
@@ -525,7 +525,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                     else:
                         pass
 
-    @update_then_refresh
+    @then_refresh
     def tag_subdiv(self, subidv):
         selection = tag_utils.get_clean_selection(self.affect_mode)
         for obj in selection:
@@ -545,7 +545,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                 tag_utils.create_gtags_attribute(obj)
                 tag_utils.set_gtags_attribute(obj, subidv)
 
-    @update_then_refresh
+    @then_refresh
     def tag_smooth(self):
         selection = tag_utils.get_clean_selection(self.affect_mode)
         for obj in selection:
@@ -560,7 +560,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                 tag_utils.create_gtags_attribute(obj)
                 tag_utils.set_gtags_attribute(obj, "smooth")
 
-    @update_then_refresh
+    @then_refresh
     def merge_selected_tags(self):
         selected_tags = []
         selection = tag_utils.get_clean_selection(self.affect_mode)
@@ -582,7 +582,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                 else:
                     pass
 
-    @update_then_refresh
+    @then_refresh
     def merge_all(self):
         selected_tags = self.get_items_on_list()
         selection = tag_utils.get_clean_selection(self.affect_mode)
