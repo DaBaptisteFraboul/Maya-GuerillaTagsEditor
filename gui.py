@@ -553,9 +553,8 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                 old_tags = tag_utils.convert_gtags_in_list(
                     tag_utils.get_gtags_attribute(obj)
                 )
-                for tags in old_tags:
-                    if "smooth" not in old_tags:
-                        tag_utils.add_gtag_to_attr(obj, "smooth")
+                if "smooth" not in old_tags:
+                    tag_utils.add_gtag_to_attr(obj, "smooth")
             else:
                 tag_utils.create_gtags_attribute(obj)
                 tag_utils.set_gtags_attribute(obj, "smooth")
