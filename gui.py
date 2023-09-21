@@ -3,9 +3,23 @@ from shiboken2 import wrapInstance
 import path_utils
 import tag_utils
 
+import maya.utils
 import maya.cmds as cmds
 import maya.OpenMayaUI as omui
 import importlib
+
+import logging
+
+# Logging setup
+logger = logging.getLogger(__name__)
+hdlr = maya.utils.MayaGuiLogHandler()
+formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr)
+logger.setLevel(logging.INFO)
+logger.propagate = False
+
+logger.info("Logger testing")
 
 for modules in [tag_utils, path_utils]:
     importlib.reload(modules)
@@ -27,14 +41,13 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.setStyleSheet(stylesheet)
         self.scene_cache = {}
         self.is_scene_cached = False
+        # Objects we do not want to affect such as camera transform
         self.object_blacklist = []
         self.import_icons()
         self.create_widgets()
         self.create_layout()
         self.affect_mode = "selection"
         self.generate_selection_scriptjob()
-        # Objects we do not want to affect such as camera transform
-        self.refresh_tag_list_widget()
         self.setWindowIcon(
             QtGui.QIcon(path_utils.get_abspath("icons/guerilla_render.png"))
         )
@@ -45,9 +58,10 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.subdiv_taglist = ["s0", "s01", "s02", "s03", "s04"]
         self.init_materials_taglist()
 
-        print(f"Materials list : {self.materials_taglist}")
-
     def create_widgets(self):
+        """
+        Create all widgets for the window with connections to methods
+        """
         self.label_title = QtWidgets.QLabel("Tags on selection")
 
         self.tag_list = QtWidgets.QListWidget()
@@ -122,11 +136,23 @@ class guerillaTagsEditor(QtWidgets.QDialog):
 
         self.option_label = QtWidgets.QLabel("Options")
 
+    def update_then_refresh(method):
+        """
+        Decorator that is used to update the the instance blacklist, use methode and then refresh the instance
+        """
+
+        def instance_wrapper(self):
+            wrapped_method = method(self)
+            self.refresh_tag_list_widget()
+            return wrapped_method
+
+        return instance_wrapper
+
     def update_blacklist(self):
+        logger.info(f"Updating blacklist : {self.object_blacklist} ")
         for obj in tag_utils.get_cameras_transform_in_scene():
             if obj not in self.object_blacklist:
                 self.object_blacklist.append(obj)
-        print(f"Blacklist : {self.object_blacklist}")
 
     def init_materials_taglist(self):
         for shading_engine in cmds.ls(type="shadingEngine"):
@@ -259,9 +285,11 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         children_list = []
         tag_list = []
         for obj in list:
+            # Loop on selected objects
             if self.get_children_check.isChecked():
                 children = cmds.listRelatives(obj)
                 if children:
+                    # Get the shape that contains the Guerilla Tags
                     for child in children:
                         if (
                             child not in children_list
@@ -293,16 +321,18 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.tag_input.setText(line_edit_text)
 
     def generate_selection_scriptjob(self):
+        # Script job that refresh the blacklist and refresh_tag_list_widget
         self.script_job = cmds.scriptJob(
             event=["SelectionChanged", self.scriptjob_exec], protected=False
         )
 
     def scriptjob_exec(self):
+        logger.warning("Changing selection")
         self.update_blacklist()
         self.refresh_tag_list_widget()
 
     def closeEvent(self, event):
-        print("Closing Gtags editor event")
+        logger.info("Closing Gtags editor event")
         cmds.scriptJob(kill=self.script_job)
         event.accept()
 
@@ -311,11 +341,8 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         Modify widget if their tag is shared with all selection
         :return:
         """
-        self.update_blacklist()
         list_widget_items = []
-        selection = tag_utils.get_clean_selection(
-            self.affect_mode, self.object_blacklist
-        )
+        selection = tag_utils.get_clean_selection(self.affect_mode)
         for i in range(self.tag_list.count()):
             list_widget_items.append(self.tag_list.item(i))
 
@@ -347,7 +374,6 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         Get the list of tags on the list widget
         :return:
         """
-        print(f"Number of items : {self.tag_list.count()}")
         list_widget_items = []
         for i in range(self.tag_list.count()):
             list_widget_items.append(self.tag_list.item(i).text())
@@ -381,13 +407,9 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         self.tag_list.clear()
 
     def refresh_tag_list_widget(self):
-        print("ici")
-        self.update_blacklist()
-        print(f"Object : {self.object_blacklist} ")
+        logger.info("Refreshing list widget")
         tags_to_push = []
-        selection = tag_utils.get_clean_selection(
-            self.affect_mode, self.object_blacklist
-        )
+        selection = tag_utils.get_clean_selection(self.affect_mode)
         for obj in selection:
             if tag_utils.has_gtags_attribute(obj) and not tag_utils.is_gtags_empty(obj):
                 attr = tag_utils.convert_gtags_in_list(
@@ -404,12 +426,14 @@ class guerillaTagsEditor(QtWidgets.QDialog):
         if self.highlight_shared_tags.isChecked() and len(selection) > 1:
             self.check_shared_tags()
 
+    @update_then_refresh
     def replace_tags(self):
-        self.update_blacklist()
+        """
+        Replace tags by taking in account the selected tags in the list
+        """
+
         selected_tags = []
-        selection = tag_utils.get_clean_selection(
-            self.affect_mode, self.object_blacklist
-        )
+        selection = tag_utils.get_clean_selection(self.affect_mode)
         line_edit_tags = tag_utils.convert_gtags_in_list(self.tag_input.text())
         for items in self.tag_list.selectedItems():
             selected_tags.append(items.text())
@@ -429,14 +453,11 @@ class guerillaTagsEditor(QtWidgets.QDialog):
             tag_utils.set_gtags_attribute(
                 obj, tag_utils.convert_gtags_in_string(obj_tags)
             )
-        self.refresh_tag_list_widget()
 
+    @update_then_refresh
     def delete_tags(self):
-        self.update_blacklist()
         selected_tags = []
-        selection = tag_utils.get_clean_selection(
-            self.affect_mode, self.object_blacklist
-        )
+        selection = tag_utils.get_clean_selection(self.affect_mode)
         for items in self.tag_list.selectedItems():
             selected_tags.append(items.text())
         for obj in selection:
@@ -450,14 +471,12 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                     pass
             tags_replace = tag_utils.convert_gtags_in_string(old_tags)
             tag_utils.set_gtags_attribute(obj, tags_replace)
-        self.refresh_tag_list_widget()
 
+    @update_then_refresh
     def add_tag_materials(self):
-        self.update_blacklist()
-        for obj in tag_utils.get_clean_selection(
-            self.affect_mode, self.object_blacklist
-        ):
+        for obj in tag_utils.get_clean_selection(self.affect_mode):
             matname = tag_utils.get_obj_material(obj)
+            logger.info(f"Object material name : {matname}")
             if tag_utils.has_gtags_attribute(obj):
                 obj_tags = tag_utils.convert_gtags_in_list(
                     tag_utils.get_gtags_attribute(obj)
@@ -465,7 +484,7 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                 if not tag_utils.is_gtags_empty(obj):
                     for tags in obj_tags:
                         if tags == matname:
-                            break
+                            return
                         if matname in self.materials_taglist or matname in tags:
                             obj_tags.remove(tags)
                         obj_tags.append(tag_utils.get_obj_material(obj))
@@ -477,20 +496,18 @@ class guerillaTagsEditor(QtWidgets.QDialog):
             else:
                 tag_utils.create_gtags_attribute(obj)
                 tag_utils.set_gtags_attribute(obj, matname)
-        self.refresh_tag_list_widget()
 
+    @update_then_refresh
     def add_gtags(self):
-        self.update_blacklist()
         """
         Get the Guerilla Tags from line edit and add them to selection
         :return:
         """
+        logger.warning("Adding Gtags")
         # Check line edit string
         if self.tag_input.text() and not self.tag_input.text().isspace():
             # Get selection
-            selection = tag_utils.get_clean_selection(
-                self.affect_mode, self.object_blacklist
-            )
+            selection = tag_utils.get_clean_selection(self.affect_mode)
             line_edit_tags = self.tag_input.text()
             new_tags = tag_utils.convert_gtags_in_list(line_edit_tags)
             for obj in selection:
@@ -508,13 +525,9 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                     else:
                         pass
 
-        self.refresh_tag_list_widget()
-
+    @update_then_refresh
     def tag_subdiv(self, subidv):
-        self.update_blacklist()
-        selection = tag_utils.get_clean_selection(
-            self.affect_mode, self.object_blacklist
-        )
+        selection = tag_utils.get_clean_selection(self.affect_mode)
         for obj in selection:
             if tag_utils.has_gtags_attribute(obj):
                 old_tags = tag_utils.convert_gtags_in_list(
@@ -531,13 +544,10 @@ class guerillaTagsEditor(QtWidgets.QDialog):
             else:
                 tag_utils.create_gtags_attribute(obj)
                 tag_utils.set_gtags_attribute(obj, subidv)
-        self.refresh_tag_list_widget()
 
+    @update_then_refresh
     def tag_smooth(self):
-        self.update_blacklist()
-        selection = tag_utils.get_clean_selection(
-            self.affect_mode, self.object_blacklist
-        )
+        selection = tag_utils.get_clean_selection(self.affect_mode)
         for obj in selection:
             if tag_utils.has_gtags_attribute(obj):
                 old_tags = tag_utils.convert_gtags_in_list(
@@ -547,17 +557,13 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                     if "smooth" not in old_tags:
                         tag_utils.add_gtag_to_attr(obj, "smooth")
             else:
-                print("No tags")
                 tag_utils.create_gtags_attribute(obj)
                 tag_utils.set_gtags_attribute(obj, "smooth")
-        self.refresh_tag_list_widget()
 
+    @update_then_refresh
     def merge_selected_tags(self):
-        self.update_blacklist()
         selected_tags = []
-        selection = tag_utils.get_clean_selection(
-            self.affect_mode, self.object_blacklist
-        )
+        selection = tag_utils.get_clean_selection(self.affect_mode)
         for items in self.tag_list.selectedItems():
             selected_tags.append(items.text())
         for obj in selection:
@@ -576,20 +582,13 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                 else:
                     pass
 
-        self.refresh_tag_list_widget()
-
+    @update_then_refresh
     def merge_all(self):
-        self.update_blacklist()
         selected_tags = self.get_items_on_list()
-        print(selected_tags)
-        selection = tag_utils.get_clean_selection(
-            self.affect_mode, self.object_blacklist
-        )
+        selection = tag_utils.get_clean_selection(self.affect_mode)
         for obj in selection:
             if not tag_utils.has_gtags_attribute(obj):
-                print("pre")
                 tag_utils.create_gtags_attribute(obj)
-                print("creating attr")
             elif tag_utils.is_gtags_empty(obj):
                 tags = tag_utils.convert_gtags_in_string(selected_tags)
                 tag_utils.set_gtags_attribute(obj, tags)
@@ -602,4 +601,3 @@ class guerillaTagsEditor(QtWidgets.QDialog):
                         tag_utils.add_gtag_to_attr(obj, tags)
                 else:
                     pass
-        self.refresh_tag_list_widget()

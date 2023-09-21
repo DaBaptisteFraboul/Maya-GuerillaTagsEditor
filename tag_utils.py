@@ -3,6 +3,10 @@ import maya.cmds as cmds
 # Module related to GuerillaTags attribute and selection
 
 
+def selection_mode(func):
+    pass
+
+
 def get_cameras_transform_in_scene():
     """
     Get camera transforms in scene to blacklist them
@@ -16,7 +20,7 @@ def get_cameras_transform_in_scene():
     return transforms
 
 
-def get_clean_selection(mode, object_blacklist) -> list:
+def get_clean_selection(mode) -> list:
     """
     Get a selection with only transforms and direct children transform if checked
     :param get_children:
@@ -33,21 +37,13 @@ def get_clean_selection(mode, object_blacklist) -> list:
                     selection.append(children)
     if mode == "all":
         selection = cmds.ls(tr=True, cameras=False)
-    print(object_blacklist, "objectblacklist")
-    for blacklisted in object_blacklist:
-        if blacklisted in selection:
-            print("blacklisted", blacklisted)
-            selection.remove(blacklisted)
-    print("Selection", selection)
     return selection
 
 
 def get_obj_material(obj: str) -> str:
     shader_groups = cmds.listConnections(cmds.listHistory(obj))
     if shader_groups:
-        material = [
-            mat for mat in cmds.ls(cmds.listConnections(shader_groups), materials=True)
-        ][0]
+        material = cmds.ls(cmds.listConnections(shader_groups), materials=True)[0]
         return material
 
 
