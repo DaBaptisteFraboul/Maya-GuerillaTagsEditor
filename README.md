@@ -31,3 +31,6 @@ main.execute()
 ## Todo list 
     - No future features planned
 
+## Thank 
+
+- Thanks to Leo Brunel who did the stylesheet.
