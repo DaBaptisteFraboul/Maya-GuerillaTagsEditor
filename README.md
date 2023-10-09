@@ -7,14 +7,14 @@ I will upgrade it on  my spare time.
 
 
 ## How to install ?
-- Step 1 : Clone or download the repository to a desired location (e.g. <DOWNLOAD_LOCATION>) 
+- Step 1 : Clone or download the repository to a desired location (e.g. "D\<DOWNLOAD_LOCATION>") 
 - Step 2 : Inside Maya, Create a new python Script in the Script Editor
 - Step 3 : Use the folowing code to call the Guerilla Tag editor
 ```python 
 import sys
 import importlib
 # Add the Maya Guerilla Tag editor folder (<DOWNLOAD_LOCATION>) to the Maya Python Interpreter
-sys.path.append(<DOWNLOAD_LOCATION>)
+sys.path.append(r"D\<DOWNLOAD_LOCATION>")
 # Import main module from GuerillaTagEditor.main
 import main
 #Launch Editor
